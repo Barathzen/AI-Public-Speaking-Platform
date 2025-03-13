@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conductor - Results</title>
+    
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css">
+
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            padding: 20px; 
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container-box {
+            background: #222;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h1 { margin-bottom: 20px; color: white; }
+
+        .feedback { 
+            font-size: 18px; 
+            color: rgb(255, 255, 255); 
+            margin-top: 15px; 
+        }
+
+        .btn { 
+            padding: 10px 20px; 
+            font-size: 16px; 
+            color: white; 
+            background-color: #28a745; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            display: inline-block;
+            text-decoration: none;
+            margin: 10px;
+        }
+
+        .btn:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+
+    <div class="container-box">
+        <h1>Speech Analysis Results</h1>
+        <p class="feedback">Energy Level: {{ result.energy }}</p>
+        <p class="feedback">Pitch: {{ result.pitch }}</p>
+        <p class="feedback">Feedback: {{ result.feedback }}</p>
+        
+        <a href="/conductor" class="btn">Try Again</a>
+        <a href="/" class="btn">Home</a>
+    </div>
+
+</body>
+</html>

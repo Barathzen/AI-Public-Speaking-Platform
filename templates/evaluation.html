@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluation Results</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;1,500&display=swap");
+
+        body {
+            background: linear-gradient(#3800e7, #8a15ff);
+            height: 100vh;
+            font-size: 12px; /* Reduced by half */
+            font-family: "DM Mono", monospace;
+            font-weight: 300;
+            overflow: hidden;
+            color: white;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            color: #333;
+        }
+
+        h1 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .evaluation {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: green;
+            margin-top: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            font-size: 1em;
+            color: white;
+            background-color: #007bff;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Floating animated circles */
+        .floating {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: float 6s ease-in-out infinite alternate;
+        }
+
+        .circle1 {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(#15e0ff, #8a15ff);
+            top: 10%;
+            left: 20%;
+        }
+
+        .circle2 {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(#d000c5, #8a15ff);
+            bottom: 15%;
+            right: 20%;
+        }
+
+        /* Keyframes for floating effect */
+        @keyframes float {
+            from {
+                transform: translateY(0px);
+            }
+            to {
+                transform: translateY(30px);
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="floating circle1"></div>
+    <div class="floating circle2"></div>
+
+    <div class="container">
+        <h1>Evaluation Results</h1>
+        <p class="evaluation">Loading...</p>
+        <a href="{{ url_for('triple_step') }}"class="btn">Try Again</a>
+        <a href="{{ url_for('home') }}" class="btn">Home</a>
+
+    </div>
+
+    <script>
+        // Get evaluation result from URL
+        const params = new URLSearchParams(window.location.search);
+        const evaluation = params.get('evaluation');
+
+        if (evaluation) {
+            document.querySelector('.evaluation').innerText = "AI Evaluation: " + evaluation;
+        } else {
+            document.querySelector('.evaluation').innerText = "No evaluation available.";
+        }
+    </script>
+
+</body>
+</html>

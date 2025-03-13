@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Public Speaking Trainer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <style>
+        /* Background Canvas */
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            position: absolute; /* Prevents it from affecting layout */
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Transparent background */
+            backdrop-filter: blur(10px);
+            z-index: 100; /* Ensures navbar stays on top */
+        }
+
+        /* Centered Content */
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        h1 {
+            color: #fff;
+            font-size: 3rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .box {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px auto;
+            width: 50%;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .buttons a {
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="#">
+                <strong style="color: white;">Venom</strong>
+            </a>
+            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navMenu">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+        <div id="navMenu" class="navbar-menu">
+            <div class="navbar-end">
+
+                <a href="{{ url_for('profile') }}" class="navbar-item has-text-white">Profile</a>
+                <a href="{{ url_for('dashboard') }}" class="navbar-item has-text-white">Dashboard</a>
+                <a href="{{ url_for('about') }}" class="navbar-item has-text-white">About</a>
+                <a href="{{ url_for('fee') }}" class="navbar-item has-text-white">Feedback</a>
+                <a href="{{ url_for('logout') }}" class="navbar-item has-text-danger">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Animated Background -->
+    <canvas id="canvas"></canvas> 
+
+    <!-- Centered Content -->
+    <div class="container">
+        <div class="box">
+        <p style="font-size: xx-large;">AI Public Speaking Trainer</p>
+        </div>
+        <div class="box">
+            <p>Enhance your public speaking skills with AI-powered training.</p>
+        </div>
+        <div class="buttons is-centered">
+            <a href="{{ url_for('rapid') }}" class="button is-primary is-large">Rapid Fire Analogies</a>
+            <a href="{{ url_for('triple_step') }}" class="button is-link is-large">Triple Step</a>
+            <a href="{{ url_for('conductor') }}" class="button is-danger is-large">Conductor</a>
+            <a href="{{ url_for('home2') }}" class="button is-danger is-large">Innovation (analysis)</a>
+        </div>
+    </div>
+
+    <script>
+        let w, h;
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        function setup() {
+            w = canvas.width = innerWidth;
+            h = canvas.height = innerHeight;
+        }
+
+        function rnd(x = 1, dx = 0) {
+            return Math.random() * x + dx;
+        }
+
+        function many(n, f) {
+            return [...Array(n)].map((_, i) => f(i));
+        }
+
+        function lerp(a, b, t) {
+            return a + (b - a) * t;
+        }
+
+        function drawCircle(x, y, r) {
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawLine(x0, y0, x1, y1) {
+            ctx.beginPath();
+            ctx.moveTo(x0, y0);
+            many(50, (i) => {
+                i = (i + 1) / 50;
+                let x = lerp(x0, x1, i);
+                let y = lerp(y0, y1, i);
+                ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+        }
+
+        function spawnSpider() {
+            const points = many(333, () => ({
+                x: rnd(innerWidth),
+                y: rnd(innerHeight),
+                len: 0,
+                r: 0
+            }));
+
+            const legPoints = many(9, (i) => ({
+                x: Math.cos((i / 9) * Math.PI * 2),
+                y: Math.sin((i / 9) * Math.PI * 2)
+            }));
+
+            let x = rnd(innerWidth);
+            let y = rnd(innerHeight);
+            let moveX = rnd(0.5, 0.5);
+            let moveY = rnd(0.5, 0.5);
+            let radius = innerWidth / rnd(100, 150);
+
+            function paintPoint(pt) {
+                legPoints.forEach((leg) => {
+                    if (!pt.len) return;
+                    drawLine(
+                        lerp(x + leg.x * radius, pt.x, pt.len * pt.len),
+                        lerp(y + leg.y * radius, pt.y, pt.len * pt.len),
+                        x + leg.x * radius,
+                        y + leg.y * radius
+                    );
+                });
+                drawCircle(pt.x, pt.y, pt.r);
+            }
+
+            return {
+                follow(tx, ty) {
+                    x += (tx - x) / 10;
+                    y += (ty - y) / 10;
+                },
+                tick(t) {
+                    x += Math.cos(t * moveX) * 5;
+                    y += Math.sin(t * moveY) * 5;
+
+                    points.forEach((pt) => {
+                        const dx = pt.x - x,
+                              dy = pt.y - y;
+                        const len = Math.hypot(dx, dy);
+                        let r = Math.min(2, innerWidth / len / 5);
+                        pt.len = Math.max(0, Math.min(pt.len + (len < innerWidth / 10 ? 0.1 : -0.1), 1));
+                        pt.r = r;
+                        paintPoint(pt);
+                    });
+                }
+            };
+        }
+
+        const spiders = many(3, spawnSpider);
+
+        window.addEventListener("pointermove", (e) => {
+            spiders.forEach(spider => spider.follow(e.clientX, e.clientY));
+        });
+
+        function animate(t) {
+            setup();
+            ctx.fillStyle = "#000";
+            ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = ctx.strokeStyle = "#fff";
+            spiders.forEach(spider => spider.tick(t / 1000));
+            requestAnimationFrame(animate);
+        }
+
+        animate(0);
+    </script>
+</body>
+</html>

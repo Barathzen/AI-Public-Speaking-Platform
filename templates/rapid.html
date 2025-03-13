@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapid Fire Analogies</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
+
+        :root {
+            --primary: #4776E6;
+            --secondary: #8E54E9;
+            --light: #fff;
+            --dark: #222;
+            --accent: #FF9C5B;
+        }
+
+        body { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            font-family: 'Poppins', sans-serif; 
+            text-align: center; 
+            color: var(--dark);
+            overflow-x: hidden;
+            perspective: 1000px;
+        }
+
+        /* Dashboard Box */
+        .box { 
+            border: none; 
+            padding: 30px; 
+            margin: 15px; 
+            border-radius: 16px; 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            transform-style: preserve-3d;
+            transform: translateZ(0);
+            transition: transform 0.5s, box-shadow 0.5s;
+        }
+
+        .box:hover {
+            transform: translateY(-5px) rotateX(2deg) rotateY(2deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-weight: 800;
+            color: var(--primary);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            transform: translateZ(20px);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        h1:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 25%;
+            width: 50%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            border-radius: 2px;
+        }
+
+        /* Progress and Score Display */
+        #progress, #score {
+            font-weight: 600;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 1.2em;
+            transform: translateZ(10px);
+        }
+
+        /* Hidden Elements */
+        .hidden { 
+            display: none; 
+        }
+
+        /* Buttons */
+        button { 
+            padding: 12px 25px; 
+            margin: 15px; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 30px; 
+            background: linear-gradient(135deg, var(--primary), var(--secondary)); 
+            color: white; 
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            transform: translateZ(10px);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 15px rgba(71, 118, 230, 0.3);
+        }
+
+        button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        button:hover { 
+            transform: translateY(-3px) translateZ(10px); 
+            box-shadow: 0 10px 20px rgba(71, 118, 230, 0.4);
+        }
+
+        button:hover:before {
+            left: 100%;
+        }
+
+        /* Analogy Section */
+        #analogy {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 10px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+            transform: translateZ(5px);
+        }
+
+        /* Options */
+        #options p {
+            padding: 10px 15px;
+            margin: 8px 0;
+            background: rgba(255,255,255,0.7);
+            border-radius: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+            transform: translateZ(5px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        #options p:hover {
+            background: rgba(142, 84, 233, 0.1);
+            transform: scale(1.02) translateZ(5px);
+        }
+
+        /* Animated "O" Counter - Enhanced */
+        .letter-o {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 60vw;
+            height: 60vw;
+            max-width: 600px;
+            max-height: 600px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateY(25deg) rotateX(10deg);
+            z-index: -1; 
+            animation: float 6s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(-50%, -50%) rotateY(25deg) rotateX(10deg); }
+            50% { transform: translate(-52%, -48%) rotateY(28deg) rotateX(8deg); }
+        }
+
+        .counter {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 70%;
+            box-shadow: inset 10px 10px 20px rgba(0, 0, 0, .2);
+            width: 30vw;
+            height: 30vw;
+            max-width: 300px;
+            max-height: 300px;
+            animation: counterAnim 6s infinite cubic-bezier(.75,-0.5,.4,1.4);
+        }
+
+        @keyframes counterAnim {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(0.8) rotate(5deg); }
+            50% { transform: scale(0.7) rotate(-3deg); }
+            75% { transform: scale(0.9) rotate(2deg); }
+        }
+
+        /* Speech Text */
+        #transcript { 
+            font-size: 1.2em; 
+            font-weight: bold; 
+            color: var(--dark); 
+            padding: 15px;
+            background: rgba(255,156,91,0.1);
+            border-radius: 10px;
+            margin-top: 20px;
+            transform: translateZ(5px);
+        }
+
+        #feedback {
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        #correct-answer {
+            font-weight: 600;
+            color: var(--primary);
+            margin-top: 10px;
+        }
+
+        /* Results container */
+        #results-container {
+            transform-style: preserve-3d;
+        }
+
+        #results-container h2 {
+            color: var(--accent);
+            font-size: 2em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            transform: translateZ(15px);
+        }
+
+        #final-score {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: var(--secondary);
+            margin: 20px 0;
+            transform: translateZ(10px);
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div class="box">
+        <h1>🔥 Rapid Fire Analogies</h1>
+
+        <!-- Dashboard -->
+            <p id="progress">Question 0 of 10</p>
+            <p id="score">Score: 0/150</p>
+        </div>
+
+        <!-- Game Container -->
+        <div id="game-container" class="box">
+            <button onclick="startGame()">Start</button>
+            <p id="analogy"></p>
+            <div id="options"></div>
+            <p id="transcript"></p>
+            <p id="feedback"></p>
+            <p id="correct-answer"></p>
+            <button id="retry-button" class="hidden" onclick="retrySpeech()">Retry</button>
+        </div>
+
+        <!-- Animated Circle -->
+        <div class="letter-o">
+            <div class="counter"></div>
+        </div>
+
+        <!-- Results Container -->
+        <div id="results-container" class="box hidden">
+            <h2>Game Over</h2>
+            <p id="final-score"></p>
+            <button onclick="resetAndStart()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        let correctAnswer = "";
+        let score = 0;
+        let questionCount = 0;
+        const totalQuestions = 10;
+        const maxScorePerQuestion = 15;
+        let startTime = 0;
+
+        function resetAndStart() {
+            score = 0;
+            questionCount = 0;
+            startGame();
+        }
+
+        function startGame() {
+            document.getElementById("results-container").classList.add("hidden");
+            document.getElementById("game-container").classList.remove("hidden");
+
+            if (questionCount >= totalQuestions) {
+                showResults();
+                return;
+            }
+
+            fetch('/start_analogy')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data || !data.analogy) {
+                        console.log("Skipping empty analogy...");
+                        setTimeout(startGame, 1000);
+                        return;
+                    }
+
+                    document.getElementById("analogy").innerText = `Complete the analogy: ${data.analogy}`;
+                    document.getElementById("options").innerHTML = data.options.map((option, index) => 
+                        `<p>${index + 1}. ${option}</p>`).join("");
+
+                    correctAnswer = data.correct_answer.toLowerCase();
+                    document.getElementById("transcript").innerText = "";
+                    document.getElementById("feedback").innerText = "";
+                    document.getElementById("correct-answer").innerText = "";
+                    document.getElementById("score").innerText = `Score: ${score}/${totalQuestions * maxScorePerQuestion}`;
+                    document.getElementById("progress").innerText = `Question ${questionCount + 1} of ${totalQuestions}`;
+
+                    startTime = new Date().getTime();
+                    startSpeechRecognition();
+                });
+        }
+
+        function startSpeechRecognition() {
+            let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = "en-US";
+            recognition.continuous = true;
+            recognition.interimResults = false;
+
+            let speechDetected = false;
+            let startTime = new Date().getTime();
+            let maxDuration = 5000;  
+
+            recognition.onresult = function(event) {
+                let transcript = event.results[0][0].transcript.toLowerCase();
+                document.getElementById("transcript").innerText = "You said: " + transcript;
+                speechDetected = true;
+
+                let responseTime = (new Date().getTime() - startTime) / 1000;
+                recognition.stop();
+                evaluateAnswer(transcript, responseTime);
+            };
+
+            recognition.onend = function() {
+                let elapsedTime = new Date().getTime() - startTime;
+                if (!speechDetected && elapsedTime >= maxDuration) {
+                    document.getElementById("feedback").innerText = "No speech detected. Click retry.";
+                    document.getElementById("retry-button").classList.remove("hidden");
+                }
+            };
+
+            recognition.start();
+
+            setTimeout(() => {
+                if (!speechDetected) recognition.stop();
+            }, maxDuration);
+        }
+
+        function evaluateAnswer(transcript, responseTime) {
+            fetch('/evaluate', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ transcript, correct_answer: correctAnswer, response_time: responseTime })
+            })
+            .then(response => response.json())
+            .then(result => {
+                document.getElementById("feedback").innerText = result.message;
+                document.getElementById("correct-answer").innerText = "Correct Answer: " + correctAnswer;
+
+                score += result.score;
+                questionCount++;
+                document.getElementById("score").innerText = `Score: ${score}/${totalQuestions * maxScorePerQuestion}`;
+                document.getElementById("progress").innerText = `Question ${questionCount} of ${totalQuestions}`;
+
+                setTimeout(startGame, 5000);
+            });
+        }
+
+        function showResults() {
+            document.getElementById("game-container").classList.add("hidden");
+            document.getElementById("results-container").classList.remove("hidden");
+            document.getElementById("final-score").innerText = `Final Score: ${score}/${totalQuestions * maxScorePerQuestion}`;
+        }
+
+        function retrySpeech() {
+            document.getElementById("retry-button").classList.add("hidden");
+            startSpeechRecognition();
+        }
+    </script>
+</body>
+</html>

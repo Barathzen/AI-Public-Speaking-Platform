@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conductor - AI Public Speaking Trainer</title>
+    
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css">
+
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=BIZ+UDGothic&display=swap");
+
+        :root {
+            --color-one: #130e23;
+            --color-two: #364b44;
+            --text-color: #c2e6ef;
+            --mem-width: min(38em, calc(100vw - 4em));
+            --mem-height: min(36em, calc(100vw - 6em));
+            --slide-duration: 0.9s;
+            --text-duration: 0.9s;
+            --text-l-height: 1.5em;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "BIZ UDGothic", sans-serif;
+            min-height: 100vh;
+            text-align: center;
+            text-rendering: optimizeSpeed;
+            line-height: 1.5;
+            color: var(--text-color);
+            background-color: #140f22;
+            background-image: url("https://lidachk.github.io/cssBayan/cssBayan/assets/lbg_317.png"),
+                url("https://lidachk.github.io/cssBayan/cssBayan/assets/filter.svg"),
+                linear-gradient(90deg, #261947, #63339c, #140f22);
+            background-repeat: no-repeat, repeat, repeat;
+            background-position: 0% 100%, 0 0, center;
+            background-blend-mode: lighten;
+            background-attachment: fixed;
+            background-size: 100vmin, auto, auto;
+            animation: start1 2s ease-in-out;
+            padding: 20px;
+        }
+
+        @keyframes start1 {
+            0% { background-position: -100% 0, 0 0, center; }
+            100% { background-position: 0 100%, 0 0, center; }
+        }
+
+        h1 { margin-bottom: 20px; }
+
+        .status { 
+            font-size: 18px; 
+            color: rgb(255, 255, 255); 
+            margin-top: 15px; 
+        }
+
+        .btn { 
+            padding: 10px 20px; 
+            font-size: 16px; 
+            color: white; 
+            background-color: #28a745; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            border: none;
+        }
+
+        .btn:hover { background-color: #218838; }
+
+        input, button, textarea, select {
+            font: inherit;
+        }
+
+        /* Bulma Centering */
+        .center-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        @media all and (min-width: 820px) and (max-width: 1022px) {
+            body {
+                background-image: url("https://lidachk.github.io/cssBayan/cssBayan/assets/lbg_470.png"),
+                    url("https://lidachk.github.io/cssBayan/cssBayan/assets/filter.svg"),
+                    linear-gradient(90deg, #261947, #63339c, #140f22);
+            }
+        }
+
+        @media all and (min-width: 1023px) {
+            body {
+                background-image: url("https://lidachk.github.io/cssBayan/cssBayan/assets/lbg.png"),
+                    url("https://lidachk.github.io/cssBayan/cssBayan/assets/filter.svg"),
+                    linear-gradient(90deg, #261947, #63339c, #140f22);
+                background-size: min(calc(50vw - 20rem), 100vmin), auto, auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="center-container">
+        <h1>Conductor Exercise</h1>
+        <p class="status">Click "Start Recording" to begin.</p>
+        <button class="btn" onclick="startRecording()">Start Recording</button>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+
+        function startRecording() {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = event => {
+                        audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        let audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                        let formData = new FormData();
+                        formData.append("audio", audioBlob);
+
+                        fetch('/analyze_conductor', { method: "POST", body: formData })
+                            .then(response => response.text())
+                            .then(data => {
+                                document.body.innerHTML = data;  // Load result page
+                            });
+                    };
+
+                    mediaRecorder.start();
+                    document.querySelector('.status').innerText = "Recording... Speak now!";
+                    
+                    setTimeout(() => {
+                        mediaRecorder.stop();
+                        document.querySelector('.status').innerText = "Recording complete! Processing...";
+                    }, 10000);  // Stop recording after 10 seconds
+                })
+                .catch(error => alert("Microphone access denied: " + error));
+        }
+    </script>
+
+</body>
+</html>

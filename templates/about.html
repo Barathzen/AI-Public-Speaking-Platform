@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About</title>
+
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* Full-screen animated background */
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Centered About Section */
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        .box {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 10px;
+            width: 500px;
+        }
+
+        h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        p {
+            color: white;
+            font-size: 1.1rem;
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Animated Background -->
+    <canvas id="canvas"></canvas>
+
+    <div class="container">
+        <div class="box">
+            <h2>About Us</h2>
+            <p>
+                Welcome to our platform! We are dedicated to helping users improve their public speaking skills using AI-powered tools. 
+                Our interactive exercises analyze speech, provide instant feedback, and adapt to your progress.
+            </p>
+            <p>
+                Whether you're practicing for a presentation, improving fluency, or just having fun, we are here to support your journey.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let w, h;
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        function setup() {
+            w = canvas.width = innerWidth;
+            h = canvas.height = innerHeight;
+        }
+
+        function rnd(x = 1, dx = 0) {
+            return Math.random() * x + dx;
+        }
+
+        function many(n, f) {
+            return [...Array(n)].map((_, i) => f(i));
+        }
+
+        function lerp(a, b, t) {
+            return a + (b - a) * t;
+        }
+
+        function drawCircle(x, y, r) {
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawLine(x0, y0, x1, y1) {
+            ctx.beginPath();
+            ctx.moveTo(x0, y0);
+            many(50, (i) => {
+                i = (i + 1) / 50;
+                let x = lerp(x0, x1, i);
+                let y = lerp(y0, y1, i);
+                ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+        }
+
+        function spawnSpider() {
+            const points = many(333, () => ({
+                x: rnd(innerWidth),
+                y: rnd(innerHeight),
+                len: 0,
+                r: 0
+            }));
+
+            const legPoints = many(9, (i) => ({
+                x: Math.cos((i / 9) * Math.PI * 2),
+                y: Math.sin((i / 9) * Math.PI * 2)
+            }));
+
+            let x = rnd(innerWidth);
+            let y = rnd(innerHeight);
+            let moveX = rnd(0.5, 0.5);
+            let moveY = rnd(0.5, 0.5);
+            let radius = innerWidth / rnd(100, 150);
+
+            function paintPoint(pt) {
+                legPoints.forEach((leg) => {
+                    if (!pt.len) return;
+                    drawLine(
+                        lerp(x + leg.x * radius, pt.x, pt.len * pt.len),
+                        lerp(y + leg.y * radius, pt.y, pt.len * pt.len),
+                        x + leg.x * radius,
+                        y + leg.y * radius
+                    );
+                });
+                drawCircle(pt.x, pt.y, pt.r);
+            }
+
+            return {
+                follow(tx, ty) {
+                    x += (tx - x) / 10;
+                    y += (ty - y) / 10;
+                },
+                tick(t) {
+                    x += Math.cos(t * moveX) * 5;
+                    y += Math.sin(t * moveY) * 5;
+
+                    points.forEach((pt) => {
+                        const dx = pt.x - x,
+                              dy = pt.y - y;
+                        const len = Math.hypot(dx, dy);
+                        let r = Math.min(2, innerWidth / len / 5);
+                        pt.len = Math.max(0, Math.min(pt.len + (len < innerWidth / 10 ? 0.1 : -0.1), 1));
+                        pt.r = r;
+                        paintPoint(pt);
+                    });
+                }
+            };
+        }
+
+        const spiders = many(3, spawnSpider);
+
+        window.addEventListener("pointermove", (e) => {
+            spiders.forEach(spider => spider.follow(e.clientX, e.clientY));
+        });
+
+        function animate(t) {
+            setup();
+            ctx.fillStyle = "#000";
+            ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = ctx.strokeStyle = "#fff";
+            spiders.forEach(spider => spider.tick(t / 1000));
+            requestAnimationFrame(animate);
+        }
+
+        animate(0);
+    </script>
+
+</body>
+</html>

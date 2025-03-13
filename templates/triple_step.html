@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triple Step - AI Public Speaking Trainer</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;1,500&display=swap");
+
+        /* Color Variables */
+        :root {
+            --purple: #8a15ff;
+            --blue: #3800e7;
+            --ltblue: #15e0ff;
+            --magenta: #d000c5;
+            --green: #28a745;
+            --red: #dc3545;
+            --dark-red: #c82333;
+            --white: #ffffff;
+        }
+
+        /* 3D Animated Background */
+        body {
+            background: linear-gradient(var(--blue), var(--purple));
+            height: 100vh;
+            font-size: calc(7px + (13 - 7) * ((100vw - 300px) / (1600 - 300)));
+            font-family: "DM Mono", monospace;
+            font-weight: 300;
+            overflow: hidden;
+            color: var(--white);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 0.2em;
+            text-shadow: 3px 3px 10px rgba(255, 255, 255, 0.2);
+        }
+
+        .topic, .distractors, .status, .evaluation {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .distractors {
+            color: var(--red);
+        }
+
+        .status {
+            color: var(--blue);
+        }
+
+        .evaluation {
+            color: var(--green);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--white);
+            background: var(--green);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            transform: perspective(500px) rotateX(10deg);
+            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.3);
+        }
+
+        .btn:hover {
+            background: #218838;
+            transform: perspective(500px) rotateX(0deg) scale(1.05);
+            box-shadow: 0 5px 25px rgba(0, 255, 0, 0.6);
+        }
+
+        .retry-btn {
+            display: none;
+            background: var(--red);
+            margin-top: 15px;
+        }
+
+        .retry-btn:hover {
+            background: var(--dark-red);
+        }
+
+        /* Floating Animated Circles */
+        .floating-circle {
+            position: absolute;
+            width: 10em;
+            height: 10em;
+            border-radius: 50%;
+            opacity: 0.5;
+            background: linear-gradient(var(--ltblue), var(--blue));
+            animation: float 6s ease-in-out infinite alternate;
+        }
+
+
+        .distractors {
+  color: white;
+}
+
+        .circle-1 {
+            top: 5%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .circle-2 {
+            bottom: 5%;
+            right: 10%;
+            animation-delay: 1.5s;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(-20px);
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Triple Step Exercise</h1>
+    <p class="topic">Loading topic...</p>
+    <p class="distractors">Distractor words will appear here.</p>
+    <p class="status"></p>
+    <p class="evaluation"></p>
+    
+    <button class="btn" onclick="startTripleStep()">Start Exercise</button>
+    <button class="btn retry-btn" onclick="startTripleStep()">Retry</button>
+
+    <div class="floating-circle circle-1"></div>
+    <div class="floating-circle circle-2"></div>
+
+    <script>
+        let recognition;
+        let collectedSpeech = "";
+        let currentTopic = "";
+        let currentDistractors = [];
+
+        function startTripleStep() {
+            document.querySelector('.status').innerText = "Listening...";
+            document.querySelector('.evaluation').innerText = "";
+            document.querySelector('.retry-btn').style.display = "none";
+            collectedSpeech = "";
+
+            fetch('/start_triple_step')
+                .then(response => response.json())
+                .then(data => {
+                    currentTopic = data.topic;
+                    currentDistractors = data.distractors;
+                    document.querySelector('.topic').innerText = "Topic: " + currentTopic;
+                    document.querySelector('.distractors').innerText = "Distractors: " + currentDistractors.join(', ');
+                    
+                    startSpeechRecognition();
+                })
+                .catch(error => console.error("Error fetching topic:", error));
+        }
+
+        function startSpeechRecognition() {
+            if (!('webkitSpeechRecognition' in window)) {
+                alert("Your browser doesn't support speech recognition. Try using Chrome.");
+                return;
+            }
+
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            let timeout = setTimeout(() => {
+                recognition.stop();
+            }, 20000);
+
+            recognition.onresult = function(event) {
+                collectedSpeech = "";
+                for (let i = 0; i < event.results.length; i++) {
+                    collectedSpeech += event.results[i][0].transcript + " ";
+                }
+                document.querySelector('.status').innerText = "You said: " + collectedSpeech;
+            };
+
+            recognition.onend = function() {
+                clearTimeout(timeout);
+                if (collectedSpeech.trim() === "") {
+                    document.querySelector('.status').innerText = "No speech detected. Please try again.";
+                    document.querySelector('.retry-btn').style.display = "inline-block";
+                } else {
+                    evaluateSpeech(collectedSpeech);
+                }
+            };
+
+            recognition.onerror = function(event) {
+                document.querySelector('.status').innerText = "Speech recognition error. Try again.";
+                document.querySelector('.retry-btn').style.display = "inline-block";
+                clearTimeout(timeout);
+            };
+
+            recognition.start();
+        }
+
+        function evaluateSpeech(transcript) {
+            fetch('/evaluate_triple_step', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    transcript: transcript,
+                    topic: currentTopic,
+                    distractors: currentDistractors
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                window.location.href = `/evaluation?evaluation=${encodeURIComponent(data.evaluation)}`;
+            })
+            .catch(error => {
+                console.error("Error sending speech data:", error);
+                document.querySelector('.status').innerText = "Error evaluating speech.";
+            });
+        }
+    </script>
+
+</body>
+</html>
